@@ -7,7 +7,7 @@
 #include <float.h>
 
 #define PARALLEL
-#define NUM_THREADS 1
+#define NUM_THREADS 4
 
 typedef struct {
     const double *C;
@@ -25,24 +25,13 @@ typedef struct {
 void *thread_worker(void *arg) {
     ThreadArgs *args = (ThreadArgs *)arg;
 
-    // Δείκτης αρχής για το υποσύνολο των query points
     const double *Q_block = args->Q + args->start * args->d;
-    double *dst_block = args->dst + args->start * (args->k + 1);
-    int *idx_block = args->idx + args->start * (args->k + 1);
+    double *dst_block = args->dst + args->start * (args->k );
+    int *idx_block = args->idx + args->start * (args->k );
 
-    // Initialize memory for the current thread's block
     int num_queries = args->end - args->start;
     printf("Thread is processing points from index %d to %d\n", args->start, args->end - 1);
 
-    // for (int i = args->start; i < args->end; ++i) {
-    //     printf("Point %d: ", i);
-    //     for (int j = 0; j < args->d; ++j) {
-    //         printf("%.4f ", Q_block[(i - args->start) * args->d + j]);
-    //     }
-    //     printf("\n");
-    // }
-
-    // Call knnsearch for this block of queries
     knnsearch(
         args->C,
         Q_block,
@@ -58,11 +47,12 @@ void *thread_worker(void *arg) {
 }
 
 int main() {
-    int N = 10;   //number of points
+    int N = 1000;   //number of points
     int d = 4;      //dimensions
     int k = 4;      //nearest neighbours
     double *C = malloc(N * d * sizeof(double));
 
+    //data init
     for (int i = 0; i < N; ++i) {
         for (int j = 0; j < d; ++j) {
             double val = (i * (j + 1)) % 23 + (j * j) % 7;
@@ -73,6 +63,7 @@ int main() {
     int *idx = malloc(2*N * k * sizeof(int));
     double *dst = malloc(2*N * k * sizeof(double));
 
+    //idx and dst arrays init
     for (int i = 0; i < N * (k + 1); ++i) {
         idx[i] = -1;
         dst[i] = FLT_MAX;
@@ -117,8 +108,6 @@ int main() {
         arg->dst = dst;
 
         pthread_create(&threads[i], NULL, thread_worker, arg);
-
-        sleep(1);
     }
 
     for (int i = 0; i < NUM_THREADS; ++i) {
@@ -129,24 +118,7 @@ int main() {
             exit(1);
         }
     }
-    // Εκτύπωση των idx και dst μετά την ολοκλήρωση των νημάτων
-    printf("[DEBUG] idx:\n");
-    for (int i = 0; i < N; ++i) {
-        printf("Query %d: ", i);
-        for (int j = 0; j < k; ++j) {
-            printf("%d ", idx[i * k + j]);
-        }
-        printf("\n");
-    }
 
-    printf("[DEBUG] dst:\n");
-    for (int i = 0; i < N; ++i) {
-        printf("Query %d: ", i);
-        for (int j = 0; j < k; ++j) {
-            printf("%.4f ", dst[i * k + j]);
-        }
-        printf("\n");
-    }
     for (int i = 0; i < N; ++i) {
         printf("Point %d:\n", i);
         int printed = 0;

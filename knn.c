@@ -49,7 +49,7 @@ void quickselect_k(double *dist, int *indices, int n, int k) {
         int pivot_new = partition(dist, indices, left, right, pivot_index);
 
         if (pivot_new == k)
-            return;  // Έχουμε τους k μικρότερους
+            return;
         else if (pivot_new < k)
             left = pivot_new + 1;
         else
@@ -62,7 +62,7 @@ void knnsearch(
     int N, int M, int d, int k,
     int *idx, double *dst
 ) {
-    // Υπολογισμός C^2
+    //  C^2
     double *C_sq = malloc(N * sizeof(double));
     for (int i = 0; i < N; ++i) {
         C_sq[i] = 0.0;
@@ -72,7 +72,7 @@ void knnsearch(
         }
     }
 
-    // Υπολογισμός Q^2
+    //  Q^2
     double *Q_sq = malloc(M * sizeof(double));
     for (int i = 0; i < M; ++i) {
         Q_sq[i] = 0.0;
@@ -82,7 +82,7 @@ void knnsearch(
         }
     }
 
-    // Υπολογισμός dot products
+    //  dot products
     double *dot_products = malloc(M * N * sizeof(double));
     cblas_dgemm(
         CblasRowMajor, CblasNoTrans, CblasTrans,
@@ -91,7 +91,7 @@ void knnsearch(
         0.0, dot_products, N
     );
 
-    // Υπολογισμός αποστάσεων
+    //  distances
     double *D = malloc(M * N * sizeof(double));
     for (int i = 0; i < M; ++i) {
         for (int j = 0; j < N; ++j) {
@@ -100,7 +100,7 @@ void knnsearch(
         }
     }
 
-    // Quickselect για κάθε query
+    // Quickselect
     for (int i = 0; i < M; ++i) {
         double *dist_row = D + i * N;
 
