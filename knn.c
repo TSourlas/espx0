@@ -62,7 +62,7 @@ void knnsearch(
     int N, int M, int d, int k,
     int *idx, double *dst
 ) {
-    // Υπολογισμός C^2 (σταθερό για όλα τα query)
+    // Υπολογισμός C^2
     double *C_sq = malloc(N * sizeof(double));
     for (int i = 0; i < N; ++i) {
         C_sq[i] = 0.0;
@@ -116,6 +116,10 @@ void knnsearch(
         for (int j = 0; j < k; ++j) {
             dst[i * k + j] = tmp_dist[j];
             idx[i * k + j] = tmp_idx[j];
+        }
+        printf("Query %d:\n", i);
+        for (int j = 0; j < k; ++j) {
+            printf("  idx: %2d, dist: %.4f\n", idx[i * k + j], dst[i * k + j]);
         }
 
         free(tmp_dist);
